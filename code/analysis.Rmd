@@ -1,0 +1,242 @@
+---
+title: "An Exploration into Toronto Parking Tickets and TTC Subway Delays"
+author: "Paul A. Hodgetts, Rutvik Bapat, Thomas Rosenthal"
+date: "21/01/2020"
+output:
+  github_document:
+    html_preview: false
+  pdf_document:
+    latex_engine: xelatex
+fontsize: 12pt
+abstract: "Explores the comparison in magnitude of Parking Tickets issued throughout Toronto and TTC Subway Delays across 24 hours for 2018. Data from TTC Subway Delays and Parking Tickets datasets from Open Toronto Data Portal were used. Both datasets were normalized to provide an accurate comparison. TTC Subway Delays and Parking Tickets were found to both peak at the beginning and end of the workday."
+header-includes:
+  - \usepackage{fontspec}
+  - \setmainfont{Georgia}
+  - \setsansfont{Helvetica}
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+library(opendatatoronto)
+library(dplyr)
+library(tidyverse)
+library(stringr)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Search packages (this returns a table)
+parking_packages <- search_packages("parking")
+
+parking_tickets <- parking_packages %>%
+  filter(title == "Parking Tickets") # Only keep the row(s) where the title is "Parking Tickets"
+
+parking_tickets2018 <- parking_tickets %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "parking-tickets-2018") %>% # Only keep the resource we want 
+  get_resource()
+```
+
+```{r echo=FALSE, include=FALSE}
+parking_tickets2018
+```
+```{r echo= FALSE}
+df1 <- cbind.data.frame(parking_tickets2018$Parking_Tags_Data_2018_1.csv)
+df2 <- cbind.data.frame(parking_tickets2018$Parking_Tags_Data_2018_2.csv)
+df3 <- cbind.data.frame(parking_tickets2018$Parking_Tags_Data_2018_3.csv)
+parking_tickets_all_base <- 
+rbind(df1,df2,df3)
+parking_tickets_all_base <- parking_tickets_all_base %>% 
+  select(`date_of_infraction`,
+          `infraction_code`,
+          `infraction_description`,
+          `set_fine_amount`,
+          `time_of_infraction`,
+          `location1`,
+          `infraction_description`,
+          `set_fine_amount`,
+          `time_of_infraction`,
+          `location1`,
+          `location2`,
+          `location3`,
+          `location4`,
+          `province`)
+```
+
+```{r echo=FALSE}
+# Search packages (this returns a table)
+delay_packages <- search_packages("delay")
+subway_delay_package <- delay_packages %>%
+  filter(title == "TTC Subway Delay Data") # Only keep the row(s) where the title is "TTC Subway Delay Data"
+subway_jan2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-january-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_feb2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-february-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_march2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-march-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_apr2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-april-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_may2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-may-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_june2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-june-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_july2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-july-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_aug2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-august-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_sept2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-september-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_oct2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-october-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_nov2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-november-2018") %>% # Only keep the resource we want 
+  get_resource()
+subway_dec2018 <- subway_delay_package %>% # Start with the package 
+  list_package_resources() %>% # List the resources in the package
+  filter(name == "ttc-subway-delay-december-2018") %>% # Only keep the resource we want 
+  get_resource()
+```
+
+```{r echo=FALSE}
+subway_delay_all_base <- 
+rbind(subway_dec2018, subway_nov2018, subway_oct2018, subway_sept2018
+     ,subway_aug2018, subway_july2018, subway_june2018, subway_may2018
+     ,subway_apr2018, subway_march2018, subway_feb2018, subway_jan2018)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+parking_tickets_all <- 
+  parking_tickets_all_base %>% 
+  filter(`time_of_infraction` != 'NA') %>%  
+  mutate(hour = str_sub(time_of_infraction,-4,-3)) 
+
+parking_tickets_all$hour[parking_tickets_all$hour == ""] <- 00 
+parking_tickets_all$hour <- as.integer(parking_tickets_all$hour)
+
+parking_tickets_all <- 
+  parking_tickets_all %>% filter(`hour` < 24)
+
+parking_hour_counts <- parking_tickets_all %>% 
+  # Separate Time into hour and minute
+  group_by(hour) %>%
+  # Count
+  summarise(number_of_tickets = n())
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+subway_hour_counts <- subway_delay_all_base %>% 
+  # Separate Time into hour and minute
+  separate(Time, into = c("hour", "minute"), sep = ":") %>%
+  # Group by hour so that our counting function will count by groups 
+  group_by(hour) %>%
+  # Count
+  summarise(number_of_delays = n())
+```
+
+```{r echo=FALSE}
+subway_hour_counts$hour <- as.integer(subway_hour_counts$hour)
+
+hour_counts <- subway_hour_counts %>%
+  inner_join(parking_hour_counts,
+    by = "hour",
+    suffix = c("_subway", "_parking"))
+```
+
+```{r echo=FALSE, include=FALSE}
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+hour_counts$number_of_delays_norm <-normalize(hour_counts$number_of_delays)
+hour_counts$number_of_tickets_norm <-normalize(hour_counts$number_of_tickets)
+
+hour_counts
+y1 <- c(min(hour_counts$number_of_tickets),max(hour_counts$number_of_tickets))
+
+y2 <- c(min(hour_counts$number_of_delays),max(hour_counts$number_of_delays))
+
+```
+
+```{r echo = FALSE, include = FALSE}
+range(hour_counts$number_of_delays)
+mean(hour_counts$number_of_delays)
+
+range(hour_counts$number_of_tickets)
+mean(hour_counts$number_of_tickets)
+```
+
+### Outcome and Chart
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(hour_counts, aes(x = hour)) +
+  geom_line(aes(y = number_of_delays_norm, colour = "TTC Subway Delays")) +
+  geom_line(aes(y = number_of_tickets_norm, colour = "Parking Tickets")) +
+  labs(
+    title =
+    "Magnitude of Parking Tickets vs. TTC Subway Delays, 2018",
+    subtitle = "[normalized]",
+    caption = "Chart 1",
+    colour = "Legend",
+    x = "Hour of Day",
+    y = "Magnitude"
+    ) + 
+  scale_x_discrete(limits = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                              13, 14, 15,16, 17, 18, 19, 20, 21, 22, 23)) +
+  scale_colour_manual(values = c("#ff0000", "#2ecc40")) +
+  theme(legend.position = "bottom",
+        plot.caption = element_text(hjust = 0, face = "italic"))
+
+```
+
+### Commentary
+
+This report examines both the Toronto Parking Ticket and the TTC Subway Delays (2018) datasets as a means of comparing the degree of magnitude for both over 24 hours. Unfortunately, only 2018 data was available for Toronto Parking Tickets, thus, this report is limited by the lack of availability of the most recent data. As such, Chart 1 is not necessarily indicative of the most recent trends. Additonally, Chart 1 explores the magnitude and not the frequency at which parking tickets were issued or TTC subway delays occurred. This is because for proper comparison of difference in the range at which parking tickets were issued (range: 14501-118204, mean = 69100.67) and range at which TTC delays occurred (range: 52-1525, mean = 864.04) required the data to be normalized. As such, one can gather from Chart 1 when the most, or fewest, parking tickets were issued or TTC delays occurred, but not the amount of tickets issued or TTC delays that occurred. As well, time was adjusted to only include the hour, such that a point on the x-axis encompasses the whole hour. As such, Chart 1 provides a generalized look at Toronto, and cannot be used to explore any one area or subway station. Of note is that the issuance of parking tickets and subway delays are both at their lowest and highest within an hour of each other (5:00am and 3:00am, and 9:00am and 8:00am respectively). Additionally, both have an increase toward the end of the workday with parking tickets rising again at 4:00pm and TTC delays occurring at 5:00pm. It seems that if one were to take the subway to avoid a parking ticket, or vice versa, there would still be some impediment.
+
+\newpage
+
+### References
+
+R Core Team (2019). R: A language and environment for statistical computing. R
+  Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York,
+  2016.
+
+Sharla Gelfand (2019). opendatatoronto: Access the City of Toronto Open Data Portal. R
+  package version 0.1.1. https://CRAN.R-project.org/package=opendatatoronto
+
+Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2019). dplyr: A
+  Grammar of Data Manipulation. R package version 0.8.1.
+  https://CRAN.R-project.org/package=dply
+
+Hadley Wickham (2017). tidyverse: Easily Install and Load the 'Tidyverse'. R package
+  version 1.2.1. https://CRAN.R-project.org/package=tidyverse 
+
+Hadley Wickham (2019). stringr: Simple, Consistent Wrappers for Common String
+  Operations. R package version 1.4.0. https://CRAN.R-project.org/package=stringr
+  
+Open Data Dataset: TTC Subway Delay Data (2019). Retrieved from https://open.toronto.ca/dataset/ttc-subway-delay-data/
+
+Open Data Dataset: Parking Tickets (2018). Retrieved from https://open.toronto.ca/dataset/parking-tickets/

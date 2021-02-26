@@ -1,6 +1,6 @@
 # An Exploration into Toronto Parking Tickets and TTC Subway Delays
 
-[Paul Hodgetts](https://github.com/hodgettsp), [Thomas Rosenthal](https://github.com/mrpotatocode) & Rutvik Bapat
+[Paul Hodgetts](https://github.com/hodgettsp), [Thomas Rosenthal](https://github.com/mrpotatocode) & [Rutvik Bapat](https://github.com/rutvik-bapat)
 
 January 21, 20202
 

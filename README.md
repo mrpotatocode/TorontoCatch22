@@ -1,6 +1,6 @@
 # TorontoCatch22
 
-This was part of experimental design coursework and intended to be an introduction to tidyverse, ggplot, and using open data sets for data science. 
+This was Part 1 of Experimental Design coursework and intended to be an introduction to tidyverse, ggplot, and using open data sets for data science. 
 
 ## Abstract
 
